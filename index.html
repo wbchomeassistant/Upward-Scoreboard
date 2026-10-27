@@ -7,20 +7,20 @@
 <title>Basketball Scoreboard</title>
 <style>
 :root{--bg:#0b0d12;--panel:#151922;--text:#f4f6fa;--mute:#7d8596;--c0:#e63946;--c1:#4dabf7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+*{touch-action:manipulation;box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;overflow:hidden;touch-action:manipulation}
-#board{height:100%;display:grid;grid-template-columns:1fr 26vw 1fr;gap:1.2vmin;padding:1.5vmin}
-.team{background:var(--panel);border-radius:2vmin;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:1.5vmin;border-top:1.4vmin solid var(--c);position:relative}
-.name{font-size:min(7vh,4.5vw);font-weight:800;letter-spacing:.08em;color:var(--c);text-transform:uppercase;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:.5vh 2vw}
-.score{font-size:min(38vh,18vw);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;color:var(--text);text-shadow:0 0 3vmin var(--c);touch-action:none;padding:0 2vw;flex:1;display:flex;align-items:center;justify-content:center}
+#board{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 26vw minmax(0,1fr);gap:1.2vmin;padding:1.5vmin}
+.team{min-width:0;overflow:hidden;background:var(--panel);border-radius:2vmin;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:1.5vmin;border-top:1.4vmin solid var(--c);position:relative}
+.name{font-size:min(7vh,4.5vw);font-weight:800;letter-spacing:.08em;color:var(--c);text-transform:uppercase;width:100%;height:calc(2.3*min(7vh,4.5vw));display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.05;overflow:hidden;padding:0 1vw}
+.score{font-size:min(38vh,18vw);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;color:var(--text);text-shadow:0 0 3vmin var(--c);touch-action:none;padding:0 2vw;flex:1;display:flex;align-items:center}
 .row{display:flex;gap:3vw;align-items:flex-start;justify-content:center;width:100%}
 .stat{display:flex;flex-direction:column;align-items:center;gap:.6vh;touch-action:none;padding:1vh 2vw}
 .lbl{font-size:min(2.6vh,1.8vw);letter-spacing:.2em;color:var(--mute);font-weight:700}
 .fouls{font-size:min(10vh,6vw);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .dots{display:flex;gap:1.2vmin;padding:1.3vh 0}
-.dot{width:min(5vh,3.4vw);height:min(5vh,3.4vw);border-radius:50%;background:var(--c);transition:opacity .15s}
+.dot{width:min(7vh,4.6vw);height:min(7vh,4.6vw);border-radius:50%;background:var(--c);transition:opacity .15s}
 .dot.used{opacity:.15}
-.bonus{position:absolute;top:3.4vh;right:1.5vw;font-size:min(2.6vh,1.8vw);font-weight:900;letter-spacing:.15em;padding:.4vh 1vw;border-radius:99px;background:var(--c);color:#000;opacity:0}
+.bonus{font-size:min(3.4vh,2.2vw);font-weight:900;letter-spacing:.15em;padding:.5vh 2vw;margin-bottom:1vh;border-radius:99px;background:var(--c);color:#000;opacity:0}
 .bonus.on{opacity:1}
 #mid{display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:var(--panel);border-radius:2vmin;padding:2vmin 1vmin}
 #period{text-align:center;touch-action:none;padding:1vh 2vw}
@@ -45,7 +45,12 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-famil
 .gr button{font-size:14px;font-weight:700;padding:8px 12px;border-radius:9px;border:0;background:#2b3345;color:var(--text)}
 .gr button.go{background:#ffd24a;color:#000}
 h3{margin:16px 0 8px;font-size:14px;letter-spacing:.1em;color:var(--mute)}
-#gear{position:fixed;right:calc(1.5vmin + env(safe-area-inset-right,0px));bottom:calc(1.5vmin + env(safe-area-inset-bottom,0px));width:5.5vmin;height:5.5vmin;min-width:34px;min-height:34px;border-radius:50%;border:0;background:#202734;color:#fff;font-size:3vmin;display:flex;align-items:center;justify-content:center;box-shadow:0 0 2vmin rgba(0,0,0,.45)}
+#to{position:fixed;inset:0;display:none;z-index:8;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:2vh;border:2vmin solid var(--tc,#fff)}
+#to.on{display:flex}
+#tot{font-size:min(10vh,7vw);font-weight:900;letter-spacing:.1em;color:var(--tc,#fff);text-transform:uppercase;text-align:center;padding:0 3vw}
+#toc{font-size:min(55vh,28vw);font-weight:900;font-variant-numeric:tabular-nums;font-family:ui-monospace,"SF Mono",Menlo,monospace;color:#ffd24a;line-height:1}
+#toh{font-size:min(3vh,2vw);color:var(--mute);letter-spacing:.2em}
+#gear{position:fixed;right:calc(1.5vmin + env(safe-area-inset-right,0px));bottom:calc(1.5vmin + env(safe-area-inset-bottom,0px));width:5.5vmin;height:5.5vmin;min-width:34px;min-height:34px;border-radius:50%;border:0;background:#fff1;color:var(--mute);font-size:max(3vmin,18px);opacity:.5}
 #set{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:9}
 #set.open{display:flex}
 .card{background:#1b202b;border-radius:18px;padding:22px;width:min(640px,94vw);max-height:94vh;overflow:auto}
@@ -78,13 +83,14 @@ button.d{background:#5a2229}
   </div>
   <div class="team" id="t1"></div>
 </div>
+<div id="to"><div id="tot"></div><div id="toc"></div><div id="toh">TAP ANYWHERE TO END TIMEOUT EARLY</div></div>
 <button id="gear" aria-label="Settings">⚙</button>
 
 <div id="set"><div class="card">
   <h2>Scoreboard settings</h2>
   <div class="g">
-    <label class="f">HOME NAME<input type="text" id="n0" maxlength="14"></label>
-    <label class="f">GUEST NAME<input type="text" id="n1" maxlength="14"></label>
+    <label class="f">HOME NAME<input type="text" id="n0" maxlength="20"></label>
+    <label class="f">GUEST NAME<input type="text" id="n1" maxlength="20"></label>
     <div class="f">HOME COLOR<input type="color" id="k0"><div class="sw" data-t="0"></div></div>
     <div class="f">GUEST COLOR<input type="color" id="k1"><div class="sw" data-t="1"></div></div>
     <div class="f">NUMBER OF PERIODS<div class="seg" id="segnp"></div></div>
@@ -101,15 +107,15 @@ button.d{background:#5a2229}
   </div>
   <h3>SCHEDULE A GAME</h3>
   <div class="g">
-    <label class="f">HOME<input type="text" id="gh" maxlength="14" placeholder="Home team"></label>
-    <label class="f">GUEST<input type="text" id="gg" maxlength="14" placeholder="Guest team"></label>
+    <label class="f">HOME<input type="text" id="gh" maxlength="20" placeholder="Home team"></label>
+    <label class="f">GUEST<input type="text" id="gg" maxlength="20" placeholder="Guest team"></label>
     <div class="f">PERIODS<div class="seg" id="gnp"></div></div>
     <div class="f">MINUTES PER PERIOD<div class="seg" id="gpm"></div></div>
   </div>
   <div class="btns"><button class="b p" id="addg">Add to schedule</button></div>
   <h3>UP NEXT</h3>
   <div class="gl" id="gl"></div>
-  <p class="tip">Tap a score, foul count or period to add one. Swipe down on it, or use the −1 buttons under the clock, to subtract one. Tap the clock to start or stop it. Tap a timeout dot to use one. This scoreboard is designed for a game table or phone-sized screen.</p>
+  <p class="tip">Tap a score, foul count or period to add one. Swipe down on it, or use the −1 buttons under the clock, to subtract one. Tap the clock to start or stop it. Tap a timeout dot to use or restore it. Tap a possession arrow to set it, tap again to clear.</p>
 </div></div>
 
 <script>
@@ -121,7 +127,7 @@ function save(){try{localStorage.setItem("sb1",JSON.stringify(S))}catch(e){}}
 /* tap = add, swipe down = subtract */
 function gesture(el,add,sub){
   var y0=0,x0=0,on=false;
-  el.addEventListener("pointerdown",function(e){on=true;y0=e.clientY;x0=e.clientX;try{el.setPointerCapture(e.pointerId)}catch(_){} });
+  el.addEventListener("pointerdown",function(e){on=true;y0=e.clientY;x0=e.clientX;try{el.setPointerCapture(e.pointerId)}catch(_){}});
   el.addEventListener("pointerup",function(e){
     if(!on)return;on=false;
     var dy=e.clientY-y0,dx=Math.abs(e.clientX-x0);
@@ -138,17 +144,17 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
   t.innerHTML='<div class="name" id="nm'+i+'"></div><div class="score" id="sc'+i+'"></div>'+
    '<div class="bonus" id="bn'+i+'">BONUS</div>'+
    '<div class="row"><div class="stat" id="fw'+i+'"><div class="lbl">FOULS</div><div class="fouls" id="fv'+i+'">0</div></div>'+
-   '<div class="stat"><div class="lbl">TIMEOUTS</div><div class="dots" id="td'+i+'"></div></div></div>';
+   '<div class="stat"><div class="lbl">TIMEOUT</div><div class="dots" id="td'+i+'"></div></div></div>';
   $("nm"+i).onclick=function(){openSet();$("n"+i).focus()};
   gesture($("sc"+i),function(){S.sc[i]=clamp(S.sc[i]+1,0,199);draw()},function(){S.sc[i]=clamp(S.sc[i]-1,0,199);draw()});
   gesture($("fw"+i),function(){S.fl[i]=clamp(S.fl[i]+1,0,99);draw()},function(){S.fl[i]=clamp(S.fl[i]-1,0,99);draw()});
   var d=$("td"+i);
-  for(var k=0;k<3;k++){(function(k){var s=document.createElement("div");s.className="dot";
-    s.onclick=function(){S.to[i]=(S.to[i]>k)?k:k+1;draw()};
+  for(var k=0;k<1;k++){(function(k){var s=document.createElement("div");s.className="dot";
+    d.onclick=function(){tapTO(i)};
     d.appendChild(s)})(k)}
   $("a"+i).onclick=function(){S.poss=S.poss===i?-1:i;draw()};
 });
-gesture($("period"),function(){S.per=clamp(S.per+1,1,S.np);draw()},function(){S.per=clamp(S.per-1,1,S.np);draw()});
+gesture($("period"),nextPeriod,function(){S.per=clamp(S.per-1,1,S.np);draw()});
 
 function fmt(ms){
   if(ms<60000){var s=Math.floor(ms/1000),t=Math.floor((ms%1000)/100);return s+"."+t}
@@ -163,11 +169,11 @@ function draw(){
   document.documentElement.style.setProperty("--c0",S.col[0]);
   document.documentElement.style.setProperty("--c1",S.col[1]);
   [0,1].forEach(function(i){
-    $("nm"+i).textContent=S.names[i]||"TEAM";
+    $("nm"+i).textContent=(S.names[i]||"TEAM").slice(0,20);fit(i);
     $("sc"+i).textContent=S.sc[i];
     $("fv"+i).textContent=S.fl[i];
     $("bn"+i).className="bonus"+(S.fl[1-i]>=5?" on":"");
-    var d=$("td"+i).children;for(var k=0;k<3;k++)d[k].className="dot"+(S.to[i]>k?" used":"");
+    var d=$("td"+i).children;for(var k=0;k<1;k++)d[k].className="dot"+(S.to[i]>k?" used":"");
     $("a"+i).className="arrow"+(S.poss===i?" on":"");
     $("a"+i).style.setProperty("--c","var(--c"+i+")");
   });
@@ -179,7 +185,7 @@ function draw(){
 function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();
   o.type="square";o.frequency.value=440;g.gain.value=.25;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+1.2)}catch(e){}}
 setInterval(function(){
-  if(!running)return;
+  tickTO();if(!running)return;
   var n=performance.now();S.ms-=n-last;last=n;
   if(S.ms<=0){S.ms=0;running=false;buzzOn();setTimeout(buzzOff,3000);save()}
   clockDraw();
@@ -187,7 +193,8 @@ setInterval(function(){
 $("clock").onclick=function(){
   if(S.ms<=0)return;
   running=!running;last=performance.now();
-  if(running){try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(function(){})}catch(e){}} else save();
+  if(running){try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(function(){})}catch(e){}}
+  else save();
   clockDraw();
 };
 
@@ -219,6 +226,47 @@ $("close").onclick=function(){$("set").classList.remove("open")};
 $("gear").onclick=openSet;
 [0,1].forEach(function(i){$("mn"+i).style.setProperty("--c","var(--c"+i+")");$("mn"+i).onclick=function(){S.sc[i]=clamp(S.sc[i]-1,0,199);draw()}});
 var G={np:4,pm:6};
+var TO=null;
+function half(p){return p>S.np/2?2:1}
+function nextPeriod(){
+  if(S.per>=S.np)return;
+  S.per++;S.fl=[0,0];S.ms=S.pm*60000;running=false;
+  if(half(S.per)===2&&half(S.per-1)===1)S.to=[0,0];
+  draw();
+}
+function tapTO(i){
+  if(TO)return;
+  if(S.to[i]){S.to[i]=0;draw();return}
+  S.to[i]=1;running=false;
+  TO={t:i,ms:60000,last:performance.now(),st:performance.now()};
+  $("tot").textContent=(S.names[i]||"TEAM")+" TIMEOUT";
+  $("to").style.setProperty("--tc","var(--c"+i+")");
+  $("to").classList.add("on");draw();tickTO();
+}
+function tickTO(){
+  if(!TO)return;
+  var n=performance.now();TO.ms-=n-TO.last;TO.last=n;
+  if(TO.ms<=0){TO=null;$("to").classList.remove("on");buzzOn();setTimeout(buzzOff,2000);return}
+  $("toc").textContent=fmt(TO.ms);
+}
+$("to").onclick=function(){
+  if(!TO||performance.now()-TO.st<800)return;
+  S.to[TO.t]=0;TO=null;$("to").classList.remove("on");draw();
+};
+function fit(i){
+  var el=$("nm"+i),k=el.textContent+"|"+innerWidth+"|"+innerHeight;
+  if(el.dataset.k===k)return;el.dataset.k=k;el.style.fontSize="";
+  var s=parseFloat(getComputedStyle(el).fontSize),n=0;
+  while((el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1)&&s>14&&n++<40){s-=2;el.style.fontSize=s+"px"}
+}
+window.addEventListener("resize",function(){draw()});
+var lt=0;
+document.addEventListener("touchend",function(e){
+  var n=Date.now();
+  if(n-lt<350&&!(e.target.closest&&e.target.closest("#set"))){e.preventDefault();if(e.target.click)e.target.click()}
+  lt=n;
+},{passive:false});
+["gesturestart","gesturechange","gestureend","dblclick"].forEach(function(g){document.addEventListener(g,function(e){e.preventDefault()},{passive:false})});
 var AC,BZ=null,held=false;
 function ac(){try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume()}catch(e){}return AC}
 document.addEventListener("pointerdown",ac);
