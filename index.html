@@ -1,1 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Basketball Scoreboard</title>
+<style>
+:root{--bg:#0b0d12;--panel:#151922;--text:#f4f6fa;--mute:#7d8596;--c0:#e63946;--c1:#4dabf7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;overflow:hidden;touch-action:manipulation}
+#board{height:100%;display:grid;grid-template-columns:1fr 26vw 1fr;gap:1.2vmin;padding:1.5vmin}
+.team{background:var(--panel);border-radius:2vmin;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:1.5vmin;border-top:1.4vmin solid var(--c);position:relative}
+.name{font-size:min(7vh,4.5vw);font-weight:800;letter-spacing:.08em;color:var(--c);text-transform:uppercase;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:.5vh 2vw}
+.score{font-size:min(38vh,18vw);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;color:var(--text);text-shadow:0 0 3vmin var(--c);touch-action:none;padding:0 2vw;flex:1;display:flex;align-items:center}
+.row{display:flex;gap:3vw;align-items:flex-start;justify-content:center;width:100%}
+.stat{display:flex;flex-direction:column;align-items:center;gap:.6vh;touch-action:none;padding:1vh 2vw}
+.lbl{font-size:min(2.6vh,1.8vw);letter-spacing:.2em;color:var(--mute);font-weight:700}
+.fouls{font-size:min(10vh,6vw);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:1.2vmin;padding:1.3vh 0}
+.dot{width:min(5vh,3.4vw);height:min(5vh,3.4vw);border-radius:50%;background:var(--c);transition:opacity .15s}
+.dot.used{opacity:.15}
+.bonus{position:absolute;top:3.4vh;right:1.5vw;font-size:min(2.6vh,1.8vw);font-weight:900;letter-spacing:.15em;padding:.4vh 1vw;border-radius:99px;background:var(--c);color:#000;opacity:0}
+.bonus.on{opacity:1}
+#mid{display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:var(--panel);border-radius:2vmin;padding:2vmin 1vmin}
+#period{text-align:center;touch-action:none;padding:1vh 2vw}
+#pval{font-size:min(9vh,6vw);font-weight:900;color:#ffd24a}
+#clock{font-size:min(15vh,8.2vw);font-weight:900;font-variant-numeric:tabular-nums;color:#ffd24a;font-family:ui-monospace,"SF Mono",Menlo,monospace;padding:2vh 0;text-align:center;line-height:1}
+#clock.paused{opacity:.6}
+#clock.done{animation:fl .5s 6;color:#ff4d4d}
+@keyframes fl{50%{opacity:.15}}
+#poss{display:flex;gap:2vw;align-items:center}
+.arrow{width:min(11vh,7vw);height:min(11vh,7vw);display:flex;align-items:center;justify-content:center;border-radius:1.5vmin;font-size:min(8vh,5vw);color:var(--mute);background:#0006;opacity:.4}
+.arrow.on{opacity:1;color:#000;background:var(--c);box-shadow:0 0 2.5vmin var(--c)}
+.buzz{width:100%;height:min(9vh,6vw);min-height:44px;border-radius:1.5vmin;border:0;background:#b3261e;color:#fff;font-size:min(4vh,2.6vw);font-weight:900;letter-spacing:.15em;touch-action:none}
+.buzz.on{background:#ff6b5a;box-shadow:0 0 3vmin #ff6b5a}
+.minus{min-width:44px;height:min(8vh,5.5vw);min-height:44px;padding:0 2vw;border-radius:1.5vmin;border:2px solid var(--c);background:#0006;color:var(--text);font-size:min(4.6vh,3vw);font-weight:800}
+#mrow{display:flex;gap:2vw;justify-content:center}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;font-size:18px;font-weight:800;padding:12px;border-radius:10px;border:2px solid #394155;background:#0f131b;color:var(--text)}
+.seg button.on{background:#ffd24a;color:#000;border-color:#ffd24a}
+.gl{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.gr{display:flex;align-items:center;gap:10px;background:#0f131b;border-radius:10px;padding:8px 10px;font-size:15px}
+.gr span{flex:1}
+.gr button{font-size:14px;font-weight:700;padding:8px 12px;border-radius:9px;border:0;background:#2b3345;color:var(--text)}
+.gr button.go{background:#ffd24a;color:#000}
+h3{margin:16px 0 8px;font-size:14px;letter-spacing:.1em;color:var(--mute)}
+#gear{position:fixed;right:calc(1.5vmin + env(safe-area-inset-right,0px));bottom:calc(1.5vmin + env(safe-area-inset-bottom,0px));width:5.5vmin;height:5.5vmin;min-width:34px;min-height:34px;border-radius:50%;border:0;background:#fff1;color:var(--mute);font-size:max(3vmin,18px);opacity:.5}
+#set{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:9}
+#set.open{display:flex}
+.card{background:#1b202b;border-radius:18px;padding:22px;width:min(640px,94vw);max-height:94vh;overflow:auto}
+.card h2{margin:0 0 12px;font-size:20px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.f{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mute);font-weight:700;letter-spacing:.1em}
+input[type=text],input[type=number]{font-size:18px;padding:10px;border-radius:10px;border:1px solid #394155;background:#0f131b;color:var(--text);width:100%;-webkit-user-select:text;user-select:text}
+input[type=color]{width:100%;height:42px;border:0;background:none;padding:0}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw i{width:32px;height:32px;border-radius:50%;border:2px solid #fff3}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+button.b{font-size:16px;font-weight:700;padding:12px 16px;border-radius:12px;border:0;background:#2b3345;color:var(--text)}
+button.p{background:#ffd24a;color:#000}
+button.d{background:#5a2229}
+.tip{font-size:13px;color:var(--mute);margin:10px 0 0;line-height:1.4}
+</style>
+</head>
+<body>
+<div id="board">
+  <div class="team" id="t0"></div>
+  <div id="mid">
+    <div id="period"><div class="lbl">PERIOD</div><div id="pval">1</div></div>
+    <div id="clock">6:00</div>
+    <button class="buzz" id="buzz">BUZZER</button>
+    <div><div class="lbl" style="text-align:center;margin-bottom:1vh">REMOVE POINT</div><div id="mrow"><button class="minus" id="mn0">−1</button><button class="minus" id="mn1">−1</button></div></div>
+    <div>
+      <div class="lbl" style="text-align:center;margin-bottom:1vh">POSSESSION</div>
+      <div id="poss"><div class="arrow" id="a0">◀</div><div class="arrow" id="a1">▶</div></div>
+    </div>
+  </div>
+  <div class="team" id="t1"></div>
+</div>
+<button id="gear" aria-label="Settings">⚙</button>
 
+<div id="set"><div class="card">
+  <h2>Scoreboard settings</h2>
+  <div class="g">
+    <label class="f">HOME NAME<input type="text" id="n0" maxlength="14"></label>
+    <label class="f">GUEST NAME<input type="text" id="n1" maxlength="14"></label>
+    <div class="f">HOME COLOR<input type="color" id="k0"><div class="sw" data-t="0"></div></div>
+    <div class="f">GUEST COLOR<input type="color" id="k1"><div class="sw" data-t="1"></div></div>
+    <div class="f">NUMBER OF PERIODS<div class="seg" id="segnp"></div></div>
+    <div class="f">MINUTES PER PERIOD<div class="seg" id="segpm"></div></div>
+    <label class="f">CURRENT CLOCK (MIN)<input type="number" id="cm" min="0" max="99" inputmode="numeric"></label>
+    <label class="f">CURRENT CLOCK (SEC)<input type="number" id="cs" min="0" max="59" inputmode="numeric"></label>
+  </div>
+  <div class="btns">
+    <button class="b p" id="setclk">Set current clock</button>
+    <button class="b" id="rstclk">Reset clock</button>
+    <button class="b" id="rstfl">Reset fouls &amp; timeouts</button>
+    <button class="b d" id="newg">New game</button>
+    <button class="b p" id="close">Done</button>
+  </div>
+  <h3>SCHEDULE A GAME</h3>
+  <div class="g">
+    <label class="f">HOME<input type="text" id="gh" maxlength="14" placeholder="Home team"></label>
+    <label class="f">GUEST<input type="text" id="gg" maxlength="14" placeholder="Guest team"></label>
+    <div class="f">PERIODS<div class="seg" id="gnp"></div></div>
+    <div class="f">MINUTES PER PERIOD<div class="seg" id="gpm"></div></div>
+  </div>
+  <div class="btns"><button class="b p" id="addg">Add to schedule</button></div>
+  <h3>UP NEXT</h3>
+  <div class="gl" id="gl"></div>
+  <p class="tip">Tap a score, foul count or period to add one. Swipe down on it, or use the −1 buttons under the clock, to subtract one. Tap the clock to start or stop it. Tap a timeout dot to use or restore it. Tap a possession arrow to set it, tap again to clear.</p>
+</div></div>
+
+<script>
+var S={names:["HOME","GUEST"],col:["#e63946","#4dabf7"],sc:[0,0],fl:[0,0],to:[0,0],poss:-1,per:1,ms:360000,np:4,pm:6,games:[]};
+var running=false,last=0,$=function(i){return document.getElementById(i)};
+try{var sv=JSON.parse(localStorage.getItem("sb1")||"null");if(sv){S=Object.assign(S,sv);if(sv.pm===undefined)S.ms=S.pm*60000}}catch(e){}
+function save(){try{localStorage.setItem("sb1",JSON.stringify(S))}catch(e){}}
+
+/* tap = add, swipe down = subtract */
+function gesture(el,add,sub){
+  var y0=0,x0=0,on=false;
+  el.addEventListener("pointerdown",function(e){on=true;y0=e.clientY;x0=e.clientX;try{el.setPointerCapture(e.pointerId)}catch(_){}});
+  el.addEventListener("pointerup",function(e){
+    if(!on)return;on=false;
+    var dy=e.clientY-y0,dx=Math.abs(e.clientX-x0);
+    if(dy>30&&dy>dx)sub();else if(Math.abs(dy)<20&&dx<20)add();
+  });
+  el.addEventListener("pointercancel",function(){on=false});
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+/* build team panels */
+[0,1].forEach(function(i){
+  var t=$("t"+i);
+  t.style.setProperty("--c","var(--c"+i+")");
+  t.innerHTML='<div class="name" id="nm'+i+'"></div><div class="score" id="sc'+i+'"></div>'+
+   '<div class="bonus" id="bn'+i+'">BONUS</div>'+
+   '<div class="row"><div class="stat" id="fw'+i+'"><div class="lbl">FOULS</div><div class="fouls" id="fv'+i+'">0</div></div>'+
+   '<div class="stat"><div class="lbl">TIMEOUTS</div><div class="dots" id="td'+i+'"></div></div></div>';
+  $("nm"+i).onclick=function(){openSet();$("n"+i).focus()};
+  gesture($("sc"+i),function(){S.sc[i]=clamp(S.sc[i]+1,0,199);draw()},function(){S.sc[i]=clamp(S.sc[i]-1,0,199);draw()});
+  gesture($("fw"+i),function(){S.fl[i]=clamp(S.fl[i]+1,0,99);draw()},function(){S.fl[i]=clamp(S.fl[i]-1,0,99);draw()});
+  var d=$("td"+i);
+  for(var k=0;k<3;k++){(function(k){var s=document.createElement("div");s.className="dot";
+    s.onclick=function(){S.to[i]=(S.to[i]>k)?k:k+1;draw()};
+    d.appendChild(s)})(k)}
+  $("a"+i).onclick=function(){S.poss=S.poss===i?-1:i;draw()};
+});
+gesture($("period"),function(){S.per=clamp(S.per+1,1,S.np);draw()},function(){S.per=clamp(S.per-1,1,S.np);draw()});
+
+function fmt(ms){
+  if(ms<60000){var s=Math.floor(ms/1000),t=Math.floor((ms%1000)/100);return s+"."+t}
+  var m=Math.ceil(ms/1000),mm=Math.floor(m/60),ss=m%60;return mm+":"+(ss<10?"0":"")+ss;
+}
+function clockDraw(){
+  var c=$("clock");c.textContent=fmt(S.ms);
+  c.className=(running?"":"paused")+(S.ms<=0?" done":"");
+  if(S.ms<=0)c.className="done";
+}
+function draw(){
+  document.documentElement.style.setProperty("--c0",S.col[0]);
+  document.documentElement.style.setProperty("--c1",S.col[1]);
+  [0,1].forEach(function(i){
+    $("nm"+i).textContent=S.names[i]||"TEAM";
+    $("sc"+i).textContent=S.sc[i];
+    $("fv"+i).textContent=S.fl[i];
+    $("bn"+i).className="bonus"+(S.fl[1-i]>=5?" on":"");
+    var d=$("td"+i).children;for(var k=0;k<3;k++)d[k].className="dot"+(S.to[i]>k?" used":"");
+    $("a"+i).className="arrow"+(S.poss===i?" on":"");
+    $("a"+i).style.setProperty("--c","var(--c"+i+")");
+  });
+  S.per=clamp(S.per,1,S.np);$("pval").textContent=S.per;
+  clockDraw();save();
+}
+
+/* clock */
+function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();
+  o.type="square";o.frequency.value=440;g.gain.value=.25;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+1.2)}catch(e){}}
+setInterval(function(){
+  if(!running)return;
+  var n=performance.now();S.ms-=n-last;last=n;
+  if(S.ms<=0){S.ms=0;running=false;buzzOn();setTimeout(buzzOff,3000);save()}
+  clockDraw();
+},100);
+$("clock").onclick=function(){
+  if(S.ms<=0)return;
+  running=!running;last=performance.now();
+  if(running){try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(function(){})}catch(e){}}
+  else save();
+  clockDraw();
+};
+
+/* settings */
+var PRE=["#e63946","#ff8a3d","#ffd24a","#2ecc71","#4dabf7","#9b6bff","#ff5fa2","#ffffff"];
+function openSet(){
+  $("n0").value=S.names[0];$("n1").value=S.names[1];
+  $("k0").value=S.col[0];$("k1").value=S.col[1];
+  var t=Math.ceil(S.ms/1000);$("cm").value=Math.floor(t/60);$("cs").value=t%60;G.np=S.np;G.pm=S.pm;segs();renderGames();
+  $("set").classList.add("open");
+}
+document.querySelectorAll(".sw").forEach(function(box){
+  var i=+box.dataset.t;
+  PRE.forEach(function(c){var s=document.createElement("i");s.style.background=c;
+    s.onclick=function(){S.col[i]=c;$("k"+i).value=c;draw()};box.appendChild(s)});
+});
+[0,1].forEach(function(i){
+  $("n"+i).oninput=function(){S.names[i]=this.value.toUpperCase();draw()};
+  $("k"+i).oninput=function(){S.col[i]=this.value;draw()};
+});
+$("setclk").onclick=function(){
+  var m=clamp(parseInt($("cm").value)||0,0,99),s=clamp(parseInt($("cs").value)||0,0,59);
+  S.ms=(m*60+s)*1000;running=false;draw();
+};
+$("rstclk").onclick=function(){S.ms=S.pm*60000;running=false;draw()};
+$("rstfl").onclick=function(){S.fl=[0,0];S.to=[0,0];draw()};
+$("newg").onclick=function(){S.sc=[0,0];S.fl=[0,0];S.to=[0,0];S.poss=-1;S.per=1;S.ms=S.pm*60000;running=false;draw()};
+$("close").onclick=function(){$("set").classList.remove("open")};
+$("gear").onclick=openSet;
+[0,1].forEach(function(i){$("mn"+i).style.setProperty("--c","var(--c"+i+")");$("mn"+i).onclick=function(){S.sc[i]=clamp(S.sc[i]-1,0,199);draw()}});
+var G={np:4,pm:6};
+var AC,BZ=null,held=false;
+function ac(){try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume()}catch(e){}return AC}
+document.addEventListener("pointerdown",ac);
+function buzzOn(){var a=ac();if(!a||BZ)return;var g=a.createGain();g.gain.value=.3;g.connect(a.destination);
+  BZ=[400,410].map(function(f){var o=a.createOscillator();o.type="square";o.frequency.value=f;o.connect(g);o.start();return o})}
+function buzzOff(){if(BZ){BZ.forEach(function(o){try{o.stop()}catch(e){}});BZ=null}}
+var bz=$("buzz");
+bz.addEventListener("pointerdown",function(e){e.preventDefault();held=true;bz.classList.add("on");buzzOn()});
+["pointerup","pointercancel","pointerleave"].forEach(function(ev){bz.addEventListener(ev,function(){if(held){held=false;bz.classList.remove("on");buzzOff()}})});
+function seg(id,vals,get,set,suf){
+  var el=$(id);el.innerHTML="";
+  vals.forEach(function(v){var b=document.createElement("button");b.textContent=v+(suf||"");
+    b.className=get()===v?"on":"";
+    b.onclick=function(){set(v);segs()};el.appendChild(b)});
+}
+function segs(){
+  seg("segnp",[4,6],function(){return S.np},function(v){S.np=v;draw()});
+  seg("segpm",[6,7],function(){return S.pm},function(v){S.pm=v;if(!running)S.ms=v*60000;draw()}," min");
+  seg("gnp",[4,6],function(){return G.np},function(v){G.np=v});
+  seg("gpm",[6,7],function(){return G.pm},function(v){G.pm=v}," min");
+}
+function startGame(g){
+  S.names=[g.h,g.g];S.np=g.np;S.pm=g.pm;
+  S.sc=[0,0];S.fl=[0,0];S.to=[0,0];S.poss=-1;S.per=1;S.ms=g.pm*60000;running=false;
+  draw();$("set").classList.remove("open");
+}
+function renderGames(){
+  var gl=$("gl");gl.innerHTML="";
+  if(!S.games.length){gl.innerHTML='<div class="tip">No games scheduled yet.</div>';return}
+  S.games.forEach(function(g,k){
+    var r=document.createElement("div");r.className="gr";
+    var s=document.createElement("span");s.textContent=g.h+" vs "+g.g+"  ·  "+g.np+" periods × "+g.pm+" min";
+    var go=document.createElement("button");go.className="go";go.textContent="Start";
+    go.onclick=function(){
+      var dirty=S.sc[0]+S.sc[1]>0||S.ms<S.pm*60000;
+      if(dirty&&!go.dataset.a){go.dataset.a=1;go.textContent="Tap to confirm";setTimeout(function(){delete go.dataset.a;go.textContent="Start"},3000);return}
+      startGame(g)};
+    var x=document.createElement("button");x.textContent="✕";
+    x.onclick=function(){S.games.splice(k,1);save();renderGames()};
+    r.appendChild(s);r.appendChild(go);r.appendChild(x);gl.appendChild(r);
+  });
+}
+$("addg").onclick=function(){
+  var h=($("gh").value||"").trim().toUpperCase()||"HOME",g=($("gg").value||"").trim().toUpperCase()||"GUEST";
+  S.games.push({h:h,g:g,np:G.np,pm:G.pm});save();renderGames();$("gh").value="";$("gg").value="";
+};
+draw();
+</script>
+</body>
+</html>
