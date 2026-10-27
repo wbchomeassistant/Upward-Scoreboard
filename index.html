@@ -127,7 +127,7 @@ function save(){try{localStorage.setItem("sb1",JSON.stringify(S))}catch(e){}}
 /* tap = add, swipe down = subtract */
 function gesture(el,add,sub){
   var y0=0,x0=0,on=false;
-  el.addEventListener("pointerdown",function(e){on=true;y0=e.clientY;x0=e.clientX;try{el.setPointerCapture(e.pointerId)}catch(_){}});
+  el.addEventListener("pointerdown",function(e){on=true;y0=e.clientY;x0=e.clientX;try{el.setPointerCapture(e.pointerId)}catch(_){} });
   el.addEventListener("pointerup",function(e){
     if(!on)return;on=false;
     var dy=e.clientY-y0,dx=Math.abs(e.clientX-x0);
@@ -193,7 +193,7 @@ setInterval(function(){
 $("clock").onclick=function(){
   if(S.ms<=0)return;
   running=!running;last=performance.now();
-  if(running){try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(function(){})}catch(e){}}
+  if(running){try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(function(){})}catch(e){}} 
   else save();
   clockDraw();
 };
